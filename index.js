@@ -8,8 +8,9 @@ const findProductFromAmazon = async (searchTerm) => {
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "load" });
   const products = await page.$$eval('[data-csa-c-type="item"]', (elements) => {
-    return elements.map((element) => {
-      return {
+    const p = [];
+    elements.map((element) => {
+      const product = {
         name: element.querySelector("h2 > a > span")?.innerHTML || "",
         image: element.querySelector("img")?.getAttribute("src") || "",
         price: Number(
@@ -18,7 +19,11 @@ const findProductFromAmazon = async (searchTerm) => {
             ?.innerHTML?.replace(/,/, "") || 0
         ),
       };
+      if (product.name && product.image && product.price) {
+        p.push(product);
+      }
     });
+    return p;
   });
   return products;
 };
@@ -29,24 +34,26 @@ const findProductFromFlipkart = async (searchTerm) => {
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "load" });
   const products = await page.$$eval("[data-id]", (elements) => {
-    return elements.map((element) => {
-      return {
+    const p = [];
+    elements.forEach((element) => {
+      const product = {
         name:
-          element
-            .querySelector("div:nth-child(2) > div a:nth-child(2)")
-            ?.getAttribute("title") ||
-          element.querySelector("div:nth-child(2) > div a:nth-child(2)")
-            .innerHTML ||
+          element.querySelector("div > a > div:nth-child(2) > div:nth-child(1) > div:nth-child(1)")
+            ?.innerHTML ||
           "",
         image: element.querySelector("img")?.getAttribute("src") || "",
         price: Number(
           element
-            .querySelectorAll('a div:nth-child(1) div:nth-child(1)')[2]
+            .querySelector('div > a > div:nth-child(2) > div:nth-child(2) > div:nth-child(1) > div:nth-child(1) > div:nth-child(1)')
             ?.innerHTML?.replace(/₹/, "")
             .replace(/,/, "") || 0
         ),
-      };
+      } 
+      if (product.name && product.image && product.price) {
+        p.push(product);
+      }
     });
+    return p;
   });
   return products;
 };
@@ -57,8 +64,10 @@ const findProductFromRelianceDigital = async (searchTerm) => {
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "load" });
   const products = await page.$$eval(".sp__product", (elements) => {
-    return elements.map((element) => {
-      return {
+    const p = [];
+    elements.forEach((element) => {
+      
+      const product = {
         name: element.querySelector(".sp__name")?.innerHTML || "",
         image: `https://www.reliancedigital.in/${element.querySelector("img")?.getAttribute("data-srcset") || ''}`,
         price: Number(
@@ -70,7 +79,11 @@ const findProductFromRelianceDigital = async (searchTerm) => {
             .replace(/,/, "") || 0
         ),
       };
+      if (product.name && product.image && product.price) {
+        p.push(product);
+      }
     });
+    return p;
   });
   return products;
 };
@@ -81,13 +94,18 @@ const findProductFromCroma = async (searchTerm) => {
   const page = await browser.newPage();
   await page.goto(url, { waitUntil: "load" });
   const products = await page.$$eval(".product-item", (elements) => {
-    return elements.map((element) => {
-      return {
+    const p = []
+    elements.map((element) => {
+      const product = {
         name: "",
         image: "",
         price: 0,
       };
+      if (product.name && product.image && product.price) {
+        p.push(product);
+      }
     });
+    return p;
   });
   return products;
 };
@@ -110,6 +128,6 @@ app.get("/search", async (req, res) => {
   });
 });
 // Start the server
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Server started on port ${process.env.PORT || 3000}`);
+app.listen(process.env.PORT || 3002, () => {
+  console.log(`Server started on port ${process.env.PORT || 3002}`);
 });
